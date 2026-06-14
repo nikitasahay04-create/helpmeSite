@@ -4,7 +4,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { messages } = req.body;
+
+    if (!messages || !messages.length) {
+      return res.status(400).json({ error: 'No messages provided' });
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -16,12 +20,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-3-5-haiku-latest',
         max_tokens: 500,
-        messages: [
-          {
-            role: 'user',
-            content: message
-          }
-        ]
+        messages: messages
       })
     });
 
@@ -39,6 +38,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error(error);
+
     return res.status(500).json({
       error: error.message
     });
