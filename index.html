@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help Me! — AI Student Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple: #7B2FBE; --violet: #9B59B6; --teal: #00C9B1;
+      --cyan: #00B4D8; --coral: #FF6B6B; --pink: #FF6EB4;
+      --orange: #FF9A3C; --yellow: #FFD166; --white: #FFFFFF;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Space Grotesk', sans-serif; color: var(--white); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 60px;
+      background: rgba(20,0,50,0.6); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-logo { font-family:'Syne',sans-serif; font-size:1.3rem; letter-spacing:1px; color:#fff; text-decoration:none; }
+    .nav-links { display:flex; gap:36px; list-style:none; }
+    .nav-links a { color:rgba(255,255,255,0.8); text-decoration:none; font-size:.9rem; font-weight:500; transition:color .2s; }
+    .nav-links a:hover { color:var(--teal); }
+    .nav-cta { background:linear-gradient(135deg,var(--teal),var(--cyan)); color:#fff!important; padding:10px 22px; border-radius:50px; font-weight:600!important; }
+
+    /* HERO */
+    .hero {
+      min-height:100vh; padding:120px 60px 80px;
+      background:linear-gradient(135deg,#1a0040 0%,#7B2FBE 40%,#FF6EB4 75%,#FF9A3C 100%);
+      display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
+      position:relative; overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; width:600px; height:600px;
+      background:radial-gradient(circle,rgba(0,201,177,.2) 0%,transparent 70%);
+      top:-150px; right:-150px; border-radius:50%;
+    }
+    .hero-badge { display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); padding:6px 18px; border-radius:50px; font-size:.75rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; }
+    .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(3.5rem,7vw,6rem); line-height:1; text-transform:uppercase; letter-spacing:-1px; margin-bottom:12px; }
+    .hero-est { font-size:.85rem; color:var(--yellow); letter-spacing:3px; margin-bottom:28px; }
+    .hero-desc { font-size:1rem; line-height:1.75; color:rgba(255,255,255,.85); max-width:420px; margin-bottom:36px; }
+    .hero-btns { display:flex; gap:16px; flex-wrap:wrap; }
+    .btn-primary { background:#fff; color:var(--purple); padding:14px 32px; border-radius:50px; font-weight:700; font-size:.95rem; text-decoration:none; transition:transform .2s,box-shadow .2s; display:inline-block; }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,0,0,.3); }
+    .btn-outline { border:2px solid rgba(255,255,255,.6); color:#fff; padding:14px 32px; border-radius:50px; font-weight:600; font-size:.95rem; text-decoration:none; transition:background .2s; display:inline-block; }
+    .btn-outline:hover { background:rgba(255,255,255,.12); }
+    .hero-visual { border-radius:24px; overflow:hidden; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); padding:28px; display:flex; flex-direction:column; gap:12px; }
+    .hero-chat-bubble { padding:12px 16px; border-radius:16px; font-size:.85rem; line-height:1.5; max-width:80%; }
+    .hero-chat-bubble.u { background:rgba(255,255,255,.9); color:#333; align-self:flex-end; border-bottom-right-radius:3px; }
+    .hero-chat-bubble.a { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.2); align-self:flex-start; border-bottom-left-radius:3px; }
+    .typing-dots span { display:inline-block; width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.6); margin:0 2px; animation:blink 1.2s infinite; }
+    .typing-dots span:nth-child(2){animation-delay:.2s} .typing-dots span:nth-child(3){animation-delay:.4s}
+    @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+    /* SECTIONS */
+    section { padding:100px 60px; }
+    .section-eyebrow { font-size:.75rem; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px; opacity:.7; }
+    .section-title { font-family:'Syne',sans-serif; font-size:clamp(2rem,4vw,3rem); text-transform:uppercase; line-height:1.1; margin-bottom:20px; }
+    .section-body { font-size:1rem; line-height:1.75; opacity:.85; max-width:520px; }
+
+    /* WELCOME */
+    .welcome { background:linear-gradient(135deg,#0a3d62,#00C9B1); display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .welcome-stats { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:36px; }
+    .stat-card { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:16px; padding:24px; }
+    .stat-num { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:800; color:var(--yellow); }
+    .stat-label { font-size:.8rem; opacity:.75; margin-top:4px; }
+    .welcome-right { display:flex; flex-direction:column; gap:14px; }
+    .feature-pill { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:14px; padding:18px 22px; display:flex; align-items:center; gap:14px; font-size:.9rem; }
+    .pill-icon { font-size:1.4rem; }
+
+    /* SHOWCASE */
+    .showcase { background:linear-gradient(135deg,#1a0055,#00C9B1 50%,#7B2FBE); }
+    .showcase-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:50px; }
+    .showcase-card { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:20px; padding:32px 28px; transition:transform .3s,background .3s; cursor:default; }
+    .showcase-card:hover { transform:translateY(-6px); background:rgba(255,255,255,.18); }
+    .card-icon { width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:18px; }
+    .card-icon.teal{background:linear-gradient(135deg,#00C9B1,#00B4D8)} .card-icon.pink{background:linear-gradient(135deg,#FF6EB4,#FF6B6B)} .card-icon.purple{background:linear-gradient(135deg,#7B2FBE,#9B59B6)}
+    .card-title { font-family:'Syne',sans-serif; font-size:1.1rem; text-transform:uppercase; margin-bottom:10px; }
+    .card-text { font-size:.88rem; line-height:1.65; opacity:.8; }
+
+    /* AI CHAT SECTION */
+    .ai-chat-section { background:linear-gradient(160deg,#2d0070,#7B2FBE 60%,#9B59B6); }
+    .chat-layout { display:grid; grid-template-columns:1fr 1.2fr; gap:60px; align-items:start; }
+
+    /* LIVE CHAT WIDGET */
+    .chat-widget {
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+      border-radius:24px; overflow:hidden; display:flex; flex-direction:column;
+      height:520px; box-shadow:0 24px 60px rgba(0,0,0,.3);
+    }
+    .chat-header {
+      padding:18px 22px; background:rgba(255,255,255,.12);
+      border-bottom:1px solid rgba(255,255,255,.15);
+      display:flex; align-items:center; gap:12px;
+    }
+    .chat-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--cyan)); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .chat-header-info { flex:1; }
+    .chat-header-name { font-weight:700; font-size:.95rem; }
+    .chat-header-status { font-size:.75rem; opacity:.65; display:flex; align-items:center; gap:5px; margin-top:2px; }
+    .status-dot { width:7px; height:7px; border-radius:50%; background:#2ECC71; }
+    .chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; scroll-behavior:smooth; }
+    .chat-messages::-webkit-scrollbar { width:4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:2px; }
+    .msg { display:flex; gap:10px; align-items:flex-end; max-width:85%; }
+    .msg.user { align-self:flex-end; flex-direction:row-reverse; }
+    .msg-avatar { width:28px; height:28px; border-radius:50%; flex-shrink:0; font-size:.75rem; display:flex; align-items:center; justify-content:center; }
+    .msg.ai .msg-avatar { background:linear-gradient(135deg,var(--teal),var(--cyan)); }
+    .msg.user .msg-avatar { background:linear-gradient(135deg,var(--pink),var(--coral)); }
+    .msg-bubble { padding:11px 16px; border-radius:18px; font-size:.87rem; line-height:1.55; }
+    .msg.ai .msg-bubble { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.18); border-bottom-left-radius:4px; }
+    .msg.user .msg-bubble { background:rgba(255,255,255,.92); color:#222; border-bottom-right-radius:4px; }
+    .msg-time { font-size:.68rem; opacity:.45; margin-top:4px; display:block; text-align:right; }
+    .msg.ai .msg-time { text-align:left; }
+    .chat-input-area { padding:16px 18px; border-top:1px solid rgba(255,255,255,.12); display:flex; gap:10px; align-items:flex-end; background:rgba(255,255,255,.05); }
+    .chat-input { flex:1; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:14px; padding:12px 16px; color:#fff; font-family:'Space Grotesk',sans-serif; font-size:.88rem; resize:none; outline:none; min-height:44px; max-height:110px; transition:border-color .2s; }
+    .chat-input::placeholder { color:rgba(255,255,255,.4); }
+    .chat-input:focus { border-color:var(--teal); }
+    .send-btn { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,var(--teal),var(--cyan)); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform .2s,opacity .2s; font-size:1.1rem; }
+    .send-btn:hover { transform:scale(1.05); }
+    .send-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .chat-topics { display:flex; gap:8px; flex-wrap:wrap; padding:0 18px 14px; }
+    .topic-chip { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); padding:6px 14px; border-radius:50px; font-size:.75rem; cursor:pointer; transition:background .2s; white-space:nowrap; }
+    .topic-chip:hover { background:rgba(255,255,255,.2); }
+
+    /* KEY WARNING */
+    .key-warning { background:rgba(255,214,102,.12); border:1px solid rgba(255,214,102,.3); border-radius:12px; padding:16px 20px; font-size:.82rem; line-height:1.6; margin-bottom:24px; display:none; }
+    .key-warning.show { display:block; }
+
+    /* NOTES */
+    .notes-section { background:linear-gradient(160deg,#FF6B6B,#FF6EB4 50%,#FF9A3C); display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .note-item { display:flex; align-items:flex-start; gap:12px; padding:14px 18px; background:rgba(255,255,255,.12); border-radius:12px; font-size:.87rem; margin-bottom:10px; }
+    .note-dot { width:8px; height:8px; border-radius:50%; background:#fff; flex-shrink:0; margin-top:5px; }
+
+    /* PDF */
+    .pdf-section { background:linear-gradient(160deg,#FFD166,#FF9A3C 50%,#FF6B6B); display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .pdf-preview { background:rgba(255,255,255,.95); color:#333; border-radius:14px; padding:26px; }
+    .pdf-header { font-family:'Syne',sans-serif; font-size:.9rem; color:#444; border-bottom:2px solid #ddd; padding-bottom:10px; margin-bottom:14px; }
+    .pdf-line { height:8px; border-radius:4px; background:#e0e0e0; margin-bottom:8px; }
+    .pdf-line.s{width:50%} .pdf-line.m{width:75%} .pdf-line.l{width:92%}
+    .pdf-btn { margin-top:14px; display:inline-block; background:linear-gradient(135deg,var(--purple),var(--violet)); color:#fff; padding:10px 20px; border-radius:8px; font-size:.82rem; font-weight:600; cursor:pointer; border:none; }
+
+    /* CONTACT */
+    .contact { background:linear-gradient(135deg,#1a0040,#7B2FBE 50%,#00C9B1); text-align:center; }
+    .contact .section-body { margin:0 auto 48px; }
+    .contact-form { max-width:540px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+    .contact-form input, .contact-form textarea { width:100%; padding:15px 20px; border-radius:12px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.1); color:#fff; font-family:'Space Grotesk',sans-serif; font-size:.95rem; outline:none; transition:border-color .2s; }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color:rgba(255,255,255,.45); }
+    .contact-form input:focus, .contact-form textarea:focus { border-color:var(--teal); background:rgba(255,255,255,.15); }
+    .contact-form textarea { min-height:120px; resize:vertical; }
+    .submit-btn { background:linear-gradient(135deg,var(--teal),var(--cyan)); color:#fff; padding:16px 36px; border-radius:50px; font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; cursor:pointer; border:none; transition:transform .2s,box-shadow .2s; }
+    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,201,177,.4); }
+    .contact-info { margin-top:40px; display:flex; justify-content:center; gap:32px; opacity:.65; font-size:.85rem; }
+
+    footer { background:#080018; padding:30px 60px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; }
+    footer .logo { font-family:'Syne',sans-serif; font-size:1.1rem; letter-spacing:1px; }
+    footer .copy { font-size:.78rem; opacity:.45; }
+
+    .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:900px){
+      nav{padding:16px 22px;} .nav-links{display:none;}
+      section{padding:70px 22px;}
+      .hero,.welcome,.notes-section,.pdf-section,.chat-layout{grid-template-columns:1fr;}
+      .hero{padding:100px 22px 60px;} .showcase-grid{grid-template-columns:1fr;}
+      .hero-visual{display:none;} footer{padding:24px 22px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">HELP ME!</a>
+  <ul class="nav-links">
+    <li><a href="#welcome">About</a></li>
+    <li><a href="#showcase">Features</a></li>
+    <li><a href="#ai-chat">AI Chat</a></li>
+    <li><a href="#contact" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="reveal">
+    <span class="hero-badge">Student Assistant</span>
+    <h1>Help Me!</h1>
+    <p class="hero-est">Est. 2026</p>
+    <p class="hero-desc">Your AI-powered academic companion. Instant answers, smarter notes, polished PDFs — everything you need to ace your studies.</p>
+    <div class="hero-btns">
+      <a href="#ai-chat" class="btn-primary">Try AI Chat →</a>
+      <a href="#showcase" class="btn-outline">See features</a>
+    </div>
+  </div>
+  <div class="hero-visual reveal">
+    <div style="font-size:.75rem;opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">✦ Live AI Preview</div>
+    <div class="hero-chat-bubble u">Explain Porter's Five Forces simply?</div>
+    <div class="hero-chat-bubble a">Porter's Five Forces analyses industry competition through five lenses: new entrants, supplier power, buyer power, substitutes, and rivalry. Think of Reliance Jio — it disrupted telecom by entering with near-zero prices, exercising massive supplier leverage...</div>
+    <div class="hero-chat-bubble u">Now give me a BCG Matrix for Tata 🇮🇳</div>
+    <div class="hero-chat-bubble a" style="display:flex;align-items:center;gap:6px;">Thinking<span class="typing-dots"><span></span><span></span><span></span></span></div>
+    <div style="text-align:center;margin-top:8px;"><a href="#ai-chat" class="btn-primary" style="font-size:.8rem;padding:10px 22px;">Chat live ↓</a></div>
+  </div>
+</section>
+
+<!-- WELCOME -->
+<section class="welcome" id="welcome">
+  <div class="reveal">
+    <p class="section-eyebrow">Welcome</p>
+    <h2 class="section-title">Let's Begin!</h2>
+    <p class="section-body">Built with a passion for education and technology, Help Me! empowers students to achieve their goals — efficiently, accessibly, and beautifully.</p>
+    <div class="welcome-stats">
+      <div class="stat-card reveal"><div class="stat-num">10K+</div><div class="stat-label">Students helped</div></div>
+      <div class="stat-card reveal"><div class="stat-num">50K+</div><div class="stat-label">Notes generated</div></div>
+      <div class="stat-card reveal"><div class="stat-num">98%</div><div class="stat-label">Satisfaction rate</div></div>
+      <div class="stat-card reveal"><div class="stat-num">24/7</div><div class="stat-label">AI availability</div></div>
+    </div>
+  </div>
+  <div class="welcome-right reveal">
+    <div class="feature-pill"><span class="pill-icon">💬</span><span>Real-time AI answers to any question</span></div>
+    <div class="feature-pill"><span class="pill-icon">📝</span><span>Auto-generate structured study notes</span></div>
+    <div class="feature-pill"><span class="pill-icon">📄</span><span>Export polished PDFs in one click</span></div>
+    <div class="feature-pill"><span class="pill-icon">🇮🇳</span><span>Indian corporate examples built-in</span></div>
+    <div class="feature-pill"><span class="pill-icon">🎓</span><span>Covers MBA, BBA, and all business courses</span></div>
+  </div>
+</section>
+
+<!-- SHOWCASE -->
+<section class="showcase" id="showcase">
+  <div class="reveal">
+    <p class="section-eyebrow">What we offer</p>
+    <h2 class="section-title">Showcase</h2>
+  </div>
+  <div class="showcase-grid">
+    <div class="showcase-card reveal">
+      <div class="card-icon teal">💬</div>
+      <div class="card-title">AI Chat & Writing</div>
+      <p class="card-text">Ask anything. Get instant, accurate answers tailored to your coursework. Draft essays, solve problems, understand complex topics with ease.</p>
+    </div>
+    <div class="showcase-card reveal">
+      <div class="card-icon pink">📝</div>
+      <div class="card-title">Notes Generation</div>
+      <p class="card-text">Transform lectures, textbooks, or any content into clean, organised study notes automatically — saving you hours every week.</p>
+    </div>
+    <div class="showcase-card reveal">
+      <div class="card-icon purple">📄</div>
+      <div class="card-title">PDF Export</div>
+      <p class="card-text">Convert your work into beautifully formatted PDFs in seconds. Share, print, or submit — always looking polished and professional.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AI CHAT LIVE -->
+<section class="ai-chat-section" id="ai-chat">
+  <div class="chat-layout">
+    <div class="reveal">
+      <p class="section-eyebrow">Feature 01 — Live</p>
+      <h2 class="section-title">AI Chat & Writing Tool</h2>
+      <p class="section-body">Ask anything about your subjects and get precise, well-structured answers instantly. Tuned for MBA, BBA, and business students with real Indian examples.</p>
+
+      <div style="margin-top:28px;">
+        <p style="font-size:.82rem;opacity:.7;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Try asking about:</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="topic-chip" onclick="fillChat(this)" style="cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:12px;font-size:.85rem;">Porter's Five Forces with Indian examples</div>
+          <div class="topic-chip" onclick="fillChat(this)" style="cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:12px;font-size:.85rem;">BCG Matrix — explain with Tata Group</div>
+          <div class="topic-chip" onclick="fillChat(this)" style="cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:12px;font-size:.85rem;">What is CSR under Companies Act 2013?</div>
+          <div class="topic-chip" onclick="fillChat(this)" style="cursor:pointer;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:12px;font-size:.85rem;">PESTEL analysis of Indian e-commerce</div>
+        </div>
+      </div>
+
+      <div class="key-warning" id="keyWarning">
+        ⚠️ <strong>API key missing.</strong> To make the AI chat work after deployment, add your Anthropic API key as <code>ANTHROPIC_API_KEY</code> in your Netlify / Vercel environment variables, and deploy the <code>api/chat.js</code> serverless function included in this project.
+      </div>
+    </div>
+
+    <!-- CHAT WIDGET -->
+    <div class="reveal">
+      <div class="chat-widget">
+        <div class="chat-header">
+          <div class="chat-avatar">🎓</div>
+          <div class="chat-header-info">
+            <div class="chat-header-name">Help Me! AI</div>
+            <div class="chat-header-status"><span class="status-dot"></span> Online — ready to help</div>
+          </div>
+          <button onclick="clearChat()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:8px;font-size:.75rem;cursor:pointer;">Clear</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg ai">
+            <div class="msg-avatar">🎓</div>
+            <div>
+              <div class="msg-bubble">Hi! I'm your AI study assistant. Ask me anything — concepts, examples, essay help, or exam tips. I'm especially good with business strategy and MBA topics! 📚</div>
+              <span class="msg-time">Just now</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-topics" id="quickTopics">
+          <span class="topic-chip" onclick="quickAsk('Explain PESTEL analysis')">PESTEL</span>
+          <span class="topic-chip" onclick="quickAsk('What is BCG Matrix?')">BCG Matrix</span>
+          <span class="topic-chip" onclick="quickAsk('Porter Five Forces examples India')">Porter's 5 Forces</span>
+          <span class="topic-chip" onclick="quickAsk('Strategic alliances in India')">Alliances</span>
+        </div>
+
+        <div class="chat-input-area">
+          <textarea class="chat-input" id="chatInput" placeholder="Ask anything about your studies…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTES -->
+<section class="notes-section" id="notes">
+  <div class="reveal">
+    <p class="section-eyebrow">Feature 02</p>
+    <h2 class="section-title">Notes Generation Tool</h2>
+    <p class="section-body">Paste any lecture transcript, textbook passage, or article and receive clean, structured study notes with headings, bullet points, and key takeaways instantly.</p>
+    <br/>
+    <a href="#ai-chat" class="btn-primary" style="margin-top:10px;">Generate Notes →</a>
+  </div>
+  <div class="reveal">
+    <div style="font-family:'Syne',sans-serif;font-size:.8rem;opacity:.65;margin-bottom:12px;letter-spacing:2px;">✦ STRATEGIC MANAGEMENT — UNIT 2</div>
+    <div class="note-item"><div class="note-dot"></div><span>BCG Matrix: Stars, Cash Cows, Question Marks, Dogs</span></div>
+    <div class="note-item"><div class="note-dot"></div><span>Tata Motors EV segment = Star (high growth, high share)</span></div>
+    <div class="note-item"><div class="note-dot"></div><span>HUL's FMCG portfolio = classic Cash Cow management</span></div>
+    <div class="note-item"><div class="note-dot"></div><span>Porter's Five Forces: competitive analysis tool</span></div>
+    <div class="note-item"><div class="note-dot"></div><span>PESTEL: macro-environment scanning framework</span></div>
+    <div class="note-item"><div class="note-dot"></div><span>CSR mandatory under Section 135, Companies Act 2013</span></div>
+  </div>
+</section>
+
+<!-- PDF -->
+<section class="pdf-section" id="pdf">
+  <div class="reveal">
+    <p class="section-eyebrow">Feature 03</p>
+    <h2 class="section-title">PDF Export Made Easy</h2>
+    <p class="section-body">Convert your notes, essays, and answers into professional PDFs in seconds. Perfect for submissions, sharing, and printing.</p>
+    <br/>
+    <a href="#contact" class="btn-outline" style="margin-top:10px;border-color:rgba(255,255,255,.5);color:#fff;">Coming Soon</a>
+  </div>
+  <div class="reveal">
+    <div class="pdf-preview">
+      <div class="pdf-header">📄 Strategic Management — Exam Notes 2026</div>
+      <div class="pdf-line l"></div>
+      <div class="pdf-line m"></div>
+      <div class="pdf-line l"></div>
+      <div class="pdf-line s"></div>
+      <div class="pdf-line m"></div>
+      <div class="pdf-line l"></div>
+      <div class="pdf-line s"></div>
+      <div class="pdf-line m"></div>
+      <button class="pdf-btn">⬇ Export as PDF</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="reveal">
+    <p class="section-eyebrow">Get in touch</p>
+    <h2 class="section-title">Start Learning Today</h2>
+    <p class="section-body">Have questions or want to get early access? Drop us a message and we'll get back to you.</p>
+  </div>
+  <form class="contact-form reveal" onsubmit="handleContact(event)">
+    <input type="text" placeholder="Your name" required />
+    <input type="email" placeholder="Email address" required />
+    <input type="text" placeholder="Subject / course (e.g. MBA Strategic Management)" />
+    <textarea placeholder="Tell us how we can help you…"></textarea>
+    <button type="submit" class="submit-btn">Send Message →</button>
+  </form>
+  <div class="contact-info reveal">
+    <span>✉ hello@reallygreatstudio.com</span>
+    <span>📍 Est. 2026</span>
+  </div>
+</section>
+
+<footer>
+  <span class="logo">HELP ME!</span>
+  <span class="copy">© 2026 Help Me! Student Assistant. All rights reserved.</span>
+</footer>
+
+<script>
+  // ── Scroll reveal ──
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold:.1});
+  document.querySelectorAll('.reveal').forEach((el,i) => {
+    el.style.transitionDelay = (i % 4 * 0.08) + 's';
+    io.observe(el);
+  });
+
+  // ── Chat state ──
+  let messages = [];
+  let isLoading = false;
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+
+  function addMessage(role, text) {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    const avatar = role === 'ai' ? '🎓' : '👤';
+    div.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div>
+        <div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>
+        <span class="msg-time">${getTime()}</span>
+      </div>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  function addTyping() {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'msg ai'; div.id = 'typingIndicator';
+    div.innerHTML = `<div class="msg-avatar">🎓</div><div><div class="msg-bubble"><span class="typing-dots"><span></span><span></span><span></span></span></div></div>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if(t) t.remove();
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text || isLoading) return;
+
+    // Hide quick topics
+    document.getElementById('quickTopics').style.display = 'none';
+
+    input.value = ''; input.style.height = 'auto';
+    isLoading = true;
+    document.getElementById('sendBtn').disabled = true;
+
+    messages.push({role:'user', content: text});
+    addMessage('user', text);
+    addTyping();
+
+    try {
+      const res = await fetch('/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({messages})
+      });
+
+      removeTyping();
+
+      if(res.status === 404 || res.status === 405) {
+        // No serverless function — demo mode
+        const demo = getDemoReply(text);
+        messages.push({role:'assistant', content: demo});
+        addMessage('ai', demo);
+        document.getElementById('keyWarning').classList.add('show');
+      } else if(!res.ok) {
+        throw new Error('API error ' + res.status);
+      } else {
+        const data = await res.json();
+        const reply = data.content?.[0]?.text || data.reply || 'Sorry, I could not get a response.';
+        messages.push({role:'assistant', content: reply});
+        addMessage('ai', reply);
+      }
+    } catch(err) {
+      removeTyping();
+      const demo = getDemoReply(text);
+      messages.push({role:'assistant', content: demo});
+      addMessage('ai', demo);
+      document.getElementById('keyWarning').classList.add('show');
+    }
+
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+
+  function quickAsk(q) {
+    document.getElementById('chatInput').value = q;
+    sendMessage();
+  }
+
+  function fillChat(el) {
+    document.getElementById('chatInput').value = el.textContent;
+    document.getElementById('chatInput').focus();
+    document.getElementById('ai-chat').scrollIntoView({behavior:'smooth'});
+  }
+
+  function clearChat() {
+    messages = [];
+    const box = document.getElementById('chatMessages');
+    box.innerHTML = `<div class="msg ai"><div class="msg-avatar">🎓</div><div><div class="msg-bubble">Chat cleared! Ask me anything 📚</div><span class="msg-time">${getTime()}</span></div></div>`;
+    document.getElementById('quickTopics').style.display = 'flex';
+  }
+
+  function handleKey(e) {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+  }
+
+  // Demo replies when no API key is set
+  function getDemoReply(q) {
+    const ql = q.toLowerCase();
+    if(ql.includes('porter') || ql.includes('five forces')) return `Porter's Five Forces analyses industry competitiveness:\n\n1. **Threat of New Entrants** — How easy is it to enter? (e.g., Reliance Jio entered telecom with huge capital, disrupting incumbents)\n2. **Bargaining Power of Suppliers** — Few suppliers = high power. Maruti Suzuki manages this via backward integration.\n3. **Bargaining Power of Buyers** — Price-sensitive consumers in India give buyers high power in FMCG (HUL faces this constantly)\n4. **Threat of Substitutes** — Ola/Uber disrupted traditional taxis\n5. **Competitive Rivalry** — Blinkit vs Zepto vs Swiggy Instamart = intense rivalry in quick commerce\n\n💡 Exam tip: Always name a real Indian company for each force!`;
+    if(ql.includes('bcg') || ql.includes('matrix')) return `The BCG Matrix classifies business units by market share & growth:\n\n⭐ **Stars** — High share, high growth → Tata Motors' EV division, Jio 5G\n🐄 **Cash Cows** — High share, low growth → HUL's soap & detergent portfolio, Amul milk\n❓ **Question Marks** — Low share, high growth → Blinkit expanding to tier-2 cities\n🐕 **Dogs** — Low share, low growth → Old landline telecom services\n\n💡 Use BCG to decide: invest (Stars), milk (Cash Cows), pivot (Question Marks), divest (Dogs).`;
+    if(ql.includes('pestel') || ql.includes('pestle')) return `PESTEL analyses the macro-environment:\n\nP — **Political**: GST reform, Make in India policy (Maruti Suzuki benefited)\nE — **Economic**: India's 7% GDP growth, rising middle class (boosting HUL)\nS — **Social**: Digital-native youth driving Blinkit, Zepto adoption\nT — **Technology**: AI, UPI, 5G disrupting all sectors\nE — **Environmental**: EV push benefiting Tata Motors\nL — **Legal**: Companies Act 2013 (CSR mandate), SEBI regulations\n\n💡 Exam tip: Link each factor to a real Indian company/event!`;
+    if(ql.includes('csr') || ql.includes('companies act')) return `CSR under Section 135, Companies Act 2013:\n\n📌 **Who must comply?** Companies with net worth ≥ ₹500 crore, OR turnover ≥ ₹1000 crore, OR net profit ≥ ₹5 crore\n\n📌 **How much?** Minimum 2% of average net profits of previous 3 years\n\n📌 **Schedule VII activities**: Education, healthcare, environment, gender equality, rural development…\n\n📌 **Examples**:\n• Tata Group → healthcare & education via Tata Trusts\n• Infosys → Infosys Foundation for rural development\n• ITC → e-Choupal for farmers\n\n💡 Non-compliance attracts penalties — up to 3x the unspent amount!`;
+    return `Great question! Here's what I know about "${q}":\n\nThis topic connects deeply to strategic management frameworks. For your MBA exam, structure your answer with: (1) a clear definition, (2) analytical breakdown with subheadings, (3) Indian corporate examples like Reliance, Tata, HUL, or Amul, and (4) a summary table if applicable.\n\n💡 Deploy this site with an Anthropic API key to get full live AI answers!`;
+  }
+
+  // Contact form
+  function handleContact(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.textContent = 'Message Sent! ✓';
+    btn.style.background = 'linear-gradient(135deg,#28C840,#00C9B1)';
+    setTimeout(() => { btn.textContent = 'Send Message →'; btn.style.background = ''; e.target.reset(); }, 3000);
+  }
+</script>
+</body>
+</html>
